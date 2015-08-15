@@ -3,10 +3,11 @@
 #include <linux/input.h>
 #include "linux-dist/evdev.h"
 #include "linux-dist/main.h"
+#include "hw/maple/controller.h"
 
 #if defined(USE_EVDEV)
 
-  int input_evdev_init(Controller* controller, const char* device)
+  int input_evdev_init(Controller* controller, u32 port, const char* device)
   {
     char name[256] = "Unknown";
 
@@ -51,6 +52,8 @@
         #endif
         printf("evdev: Using '%s' mapping\n", controller->mapping->name);
 
+        dc_controller_state[port].enabled = true;
+
         return 0;
       }
     }
@@ -63,8 +66,7 @@
 
   bool input_evdev_handle(Controller* controller, u32 port)
   {
-    #define SET_FLAG(field, mask, expr) field =((expr) ? (field | mask) : (field & ~mask))
-    if (controller->fd < 0 || controller->mapping == NULL)
+    if (dc_controller_state[port].enabled == 0 || controller->fd < 0 || controller->mapping == NULL)
     {
       return false;
     }
@@ -80,40 +82,10 @@
       switch(ie.type)
       {
         case EV_KEY:
-          if (ie.code == controller->mapping->Btn_A) {
-            SET_FLAG(kcode[port], DC_BTN_A, ie.value);
-          } else if (ie.code == controller->mapping->Btn_B) {
-            SET_FLAG(kcode[port], DC_BTN_B, ie.value);
-          } else if (ie.code == controller->mapping->Btn_C) {
-            SET_FLAG(kcode[port], DC_BTN_C, ie.value);
-          } else if (ie.code == controller->mapping->Btn_D) {
-            SET_FLAG(kcode[port], DC_BTN_D, ie.value);
-          } else if (ie.code == controller->mapping->Btn_X) {
-            SET_FLAG(kcode[port], DC_BTN_X, ie.value);
-          } else if (ie.code == controller->mapping->Btn_Y) {
-            SET_FLAG(kcode[port], DC_BTN_Y, ie.value);
-          } else if (ie.code == controller->mapping->Btn_Z) {
-            SET_FLAG(kcode[port], DC_BTN_Z, ie.value);
-          } else if (ie.code == controller->mapping->Btn_Start) {
-            SET_FLAG(kcode[port], DC_BTN_START, ie.value);
-          } else if (ie.code == controller->mapping->Btn_Escape) {
+          if (controller->mapping->buttons.count(ie.code) == 1) {
+            dc_controller_state[port].set_key(controller->mapping->buttons[ie.code], ie.value);
+          } else  if (ie.code == controller->mapping->Btn_Escape) {
             die("death by escape key");
-          } else if (ie.code == controller->mapping->Btn_DPad_Left) {
-            SET_FLAG(kcode[port], DC_DPAD_LEFT, ie.value);
-          } else if (ie.code == controller->mapping->Btn_DPad_Right) {
-            SET_FLAG(kcode[port], DC_DPAD_RIGHT, ie.value);
-          } else if (ie.code == controller->mapping->Btn_DPad_Up) {
-            SET_FLAG(kcode[port], DC_DPAD_UP, ie.value);
-          } else if (ie.code == controller->mapping->Btn_DPad_Down) {
-            SET_FLAG(kcode[port], DC_DPAD_DOWN, ie.value);
-          } else if (ie.code == controller->mapping->Btn_DPad2_Left) {
-            SET_FLAG(kcode[port], DC_DPAD2_LEFT, ie.value);
-          } else if (ie.code == controller->mapping->Btn_DPad2_Right) {
-            SET_FLAG(kcode[port], DC_DPAD2_RIGHT, ie.value);
-          } else if (ie.code == controller->mapping->Btn_DPad2_Up) {
-            SET_FLAG(kcode[port], DC_DPAD2_UP, ie.value);
-          } else if (ie.code == controller->mapping->Btn_DPad2_Down) {
-            SET_FLAG(kcode[port], DC_DPAD2_DOWN, ie.value);
           } else if (ie.code == controller->mapping->Btn_Trigger_Left) {
             lt[port] = (ie.value ? 255 : 0);
           } else if (ie.code == controller->mapping->Btn_Trigger_Right) {
@@ -125,65 +97,65 @@
             switch(ie.value)
             {
               case -1:
-                  SET_FLAG(kcode[port], DC_DPAD_LEFT,  1);
-                  SET_FLAG(kcode[port], DC_DPAD_RIGHT, 0);
-                  break;
+                dc_controller_state[port].set_key(DC_DPAD_LEFT,  1);
+                dc_controller_state[port].set_key(DC_DPAD_RIGHT, 0);
+                break;
               case 0:
-                  SET_FLAG(kcode[port], DC_DPAD_LEFT,  0);
-                  SET_FLAG(kcode[port], DC_DPAD_RIGHT, 0);
-                  break;
+                dc_controller_state[port].set_key(DC_DPAD_LEFT,  0);
+                dc_controller_state[port].set_key(DC_DPAD_RIGHT, 0);
+                break;
               case 1:
-                  SET_FLAG(kcode[port], DC_DPAD_LEFT,  0);
-                  SET_FLAG(kcode[port], DC_DPAD_RIGHT, 1);
-                  break;
+                dc_controller_state[port].set_key(DC_DPAD_LEFT,  0);
+                dc_controller_state[port].set_key(DC_DPAD_RIGHT, 1);
+                break;
             }
           } else if (ie.code == controller->mapping->Axis_DPad_Y) {
             switch(ie.value)
             {
               case -1:
-                  SET_FLAG(kcode[port], DC_DPAD_UP,   1);
-                  SET_FLAG(kcode[port], DC_DPAD_DOWN, 0);
-                  break;
+                dc_controller_state[port].set_key(DC_DPAD_UP,   1);
+                dc_controller_state[port].set_key(DC_DPAD_DOWN, 0);
+                break;
               case 0:
-                  SET_FLAG(kcode[port], DC_DPAD_UP,  0);
-                  SET_FLAG(kcode[port], DC_DPAD_DOWN, 0);
-                  break;
+                dc_controller_state[port].set_key(DC_DPAD_UP,   0);
+                dc_controller_state[port].set_key(DC_DPAD_DOWN, 0);
+                break;
               case 1:
-                  SET_FLAG(kcode[port], DC_DPAD_UP,  0);
-                  SET_FLAG(kcode[port], DC_DPAD_DOWN, 1);
-                  break;
+                dc_controller_state[port].set_key(DC_DPAD_UP,   0);
+                dc_controller_state[port].set_key(DC_DPAD_DOWN, 1);
+                break;
             }
           } else if (ie.code == controller->mapping->Axis_DPad2_X) {
             switch(ie.value)
             {
               case -1:
-                  SET_FLAG(kcode[port], DC_DPAD2_LEFT,  1);
-                  SET_FLAG(kcode[port], DC_DPAD2_RIGHT, 0);
-                  break;
+                dc_controller_state[port].set_key(DC_DPAD2_LEFT,  1);
+                dc_controller_state[port].set_key(DC_DPAD2_RIGHT, 0);
+                break;
               case 0:
-                  SET_FLAG(kcode[port], DC_DPAD2_LEFT,  0);
-                  SET_FLAG(kcode[port], DC_DPAD2_RIGHT, 0);
-                  break;
+                dc_controller_state[port].set_key(DC_DPAD2_LEFT,  0);
+                dc_controller_state[port].set_key(DC_DPAD2_RIGHT, 0);
+                break;
               case 1:
-                  SET_FLAG(kcode[port], DC_DPAD2_LEFT,  0);
-                  SET_FLAG(kcode[port], DC_DPAD2_RIGHT, 1);
-                  break;
+                dc_controller_state[port].set_key(DC_DPAD2_LEFT,  0);
+                dc_controller_state[port].set_key(DC_DPAD2_RIGHT, 1);
+                break;
             }
           } else if (ie.code == controller->mapping->Axis_DPad2_X) {
             switch(ie.value)
             {
               case -1:
-                  SET_FLAG(kcode[port], DC_DPAD2_UP,   1);
-                  SET_FLAG(kcode[port], DC_DPAD2_DOWN, 0);
-                  break;
+                dc_controller_state[port].set_key(DC_DPAD2_UP,   1);
+                dc_controller_state[port].set_key(DC_DPAD2_DOWN, 0);
+                break;
               case 0:
-                  SET_FLAG(kcode[port], DC_DPAD2_UP,  0);
-                  SET_FLAG(kcode[port], DC_DPAD2_DOWN, 0);
-                  break;
+                dc_controller_state[port].set_key(DC_DPAD2_UP,  0);
+                dc_controller_state[port].set_key(DC_DPAD2_DOWN, 0);
+                break;
               case 1:
-                  SET_FLAG(kcode[port], DC_DPAD2_UP,  0);
-                  SET_FLAG(kcode[port], DC_DPAD2_DOWN, 1);
-                  break;
+                dc_controller_state[port].set_key(DC_DPAD2_UP,  0);
+                dc_controller_state[port].set_key(DC_DPAD2_DOWN, 1);
+                break;
             }
           } else if (ie.code == controller->mapping->Axis_Analog_X) {
             printf("%d", ie.value);
@@ -195,8 +167,13 @@
           } else if (ie.code == controller->mapping->Axis_Trigger_Right) {
             rt[port] = (s8)ie.value;
           }
-          break;
+        break;
       }
     }
+    kcode[port] = dc_controller_state[port].keycodes;
+    joyx[port] = dc_controller_state[port].analog_x;
+    joyy[port] = dc_controller_state[port].analog_y;
+    lt[port] = dc_controller_state[port].trigger_left;
+    rt[port] = dc_controller_state[port].trigger_right;
   }
 #endif

@@ -21,5 +21,5 @@ typedef struct s_controller Controller;
 
 #define EVDEV_DEFAULT_DEVICE_ID(port) (port == 1 ? EVDEV_DEFAULT_DEVICE_ID_1 : -1)
 
-extern int input_evdev_init(Controller* controller, const char* device);
+extern int input_evdev_init(Controller* controller, u32 port, const char* device);
 extern bool input_evdev_handle(Controller* controller, u32 port);

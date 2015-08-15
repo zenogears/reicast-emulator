@@ -76,7 +76,7 @@ ifneq (,$(findstring x86,$(platform)))
     ASFLAGS += -32
     LDFLAGS += -m32
     CFLAGS += -m32 -D TARGET_LINUX_x86 -D TARGET_NO_AREC -fsingle-precision-constant
-    CXXFLAGS += -fno-exceptions
+    CXXFLAGS += -fno-exceptions -std=c++0x
 
 # Generic 64 bit x86 (a.k.a. x64/AMD64/x86_64/Intel64/EM64T)
 else ifneq (,$(findstring x64,$(platform)))
@@ -84,7 +84,7 @@ else ifneq (,$(findstring x64,$(platform)))
     NOT_ARM := 1
     USE_X11 := 1
     CFLAGS += -D TARGET_LINUX_x64 -D TARGET_NO_AREC -fsingle-precision-constant
-    CXXFLAGS += -fexceptions
+    CXXFLAGS += -fexceptions -std=c++0x
 
 # LinCPP
 else ifneq (,$(findstring lincpp,$(platform)))
@@ -100,6 +100,7 @@ else ifneq (,$(findstring rpi2,$(platform)))
     MFLAGS += -marm -march=armv7-a -mtune=cortex-a9 -mfpu=neon -mfloat-abi=hard -funroll-loops
     ASFLAGS += -march=armv7-a -mfpu=neon -mfloat-abi=softfp
     CFLAGS += -D TARGET_BEAGLE -D TARGET_LINUX_ARMELv7 -DARM_HARDFP -fsingle-precision-constant
+    CXXFLAGS += -std=c++0x
     INCS += -I/opt/vc/include/ -I/opt/vc/include/interface/vmcs_host/linux -I/opt/vc/include/interface/vcos/pthreads -I../linux-deps/include
     LIBS += -L/opt/vc/lib/  -L../linux-deps/lib -lbcm_host
     USE_GLES := 1
@@ -110,6 +111,7 @@ else ifneq (,$(findstring beagle,$(platform)))
     MFLAGS += -marm -march=armv7-a -mtune=cortex-a9 -mfpu=neon -mfloat-abi=softfp -funroll-loops
     ASFLAGS := -march=armv7-a -mfpu=neon -mfloat-abi=softfp
     CFLAGS += -D TARGET_BEAGLE -fsingle-precision-constant
+    CXXFLAGS += -std=c++0x
     USE_GLES := 1
 
 # Pandora
@@ -122,6 +124,7 @@ else ifneq (,$(findstring pandora,$(platform)))
     MFLAGS +== -marm -march=armv7-a -mtune=cortex-a8 -mfpu=neon -mfloat-abi=softfp -funroll-loops -fpermissive
     ASFLAGS += -march=armv7-a -mfpu=neon -mfloat-abi=softfp
     CFLAGS += -D TARGET_PANDORA  -D WEIRD_SLOWNESS -fsingle-precision-constant
+    CXXFLAGS += -std=c++0x
 
 # ODROIDs
 else ifneq (,$(findstring odroid,$(platform)))
@@ -129,6 +132,7 @@ else ifneq (,$(findstring odroid,$(platform)))
     MFLAGS += -marm -mfpu=neon -mfloat-abi=hard -funroll-loops
     ASFLAGS += -mfpu=neon -mfloat-abi=hard
     CFLAGS += -D TARGET_BEAGLE -D TARGET_LINUX_ARMELv7 -DARM_HARDFP -fsingle-precision-constant
+    CXXFLAGS += -std=c++0x
     USE_GLES := 1
 
     # ODROID-XU3, -XU3 Lite & -XU4
@@ -158,6 +162,7 @@ else ifneq (,$(findstring gcwz,$(platform)))
     NO_REC := 1
     CC_PREFIX ?= /opt/gcw0-toolchain/usr/bin/mipsel-gcw0-linux-uclibc-
     CFLAGS += -D TARGET_GCW0 -D TARGET_NO_REC -fsingle-precision-constant
+    CXXFLAGS += -std=c++0x
     LIBS += -L../linux-deps/lib -L./enta_viv -lglapi
     GCWZ_PKG = reicast-gcwz.opk
     GCWZ_PKG_FILES = gcwz/default.gcw0.desktop gcwz/icon-32.png

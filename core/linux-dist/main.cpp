@@ -126,7 +126,7 @@ void SetupInput()
         evdev_device_length = snprintf(NULL, 0, EVDEV_DEVICE_STRING, evdev_device_id[port]);
         evdev_device = (char*)malloc(evdev_device_length + 1);
         sprintf(evdev_device, EVDEV_DEVICE_STRING, evdev_device_id[port]);
-        input_evdev_init(&controllers[port], evdev_device);
+        input_evdev_init(&controllers[port], port, evdev_device);
         free(evdev_device);
       }
     }
