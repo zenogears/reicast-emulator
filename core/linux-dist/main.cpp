@@ -130,6 +130,12 @@ const u32 JMapBtn_360[MAP_SIZE] =
 const u32 JMapAxis_360[MAP_SIZE] =
   { Axis_X,Axis_Y,Axis_LT,0,0,Axis_RT,DPad_Left,DPad_Up,0,0 };
 
+const u32 JMapBtn_SHAI[MAP_SIZE] =
+  { Btn_Y,Btn_B,Btn_A,Btn_X,Axis_LT,Axis_RT,0,0,0,Btn_Start };
+
+const u32 JMapAxis_SHAI[MAP_SIZE] =
+  { DPad_Left,DPad_Up,Axis_X,0,0,Axis_Y,0,0,0,0 };
+  
 const u32* JMapBtn=JMapBtn_USB;
 const u32* JMapAxis=JMapAxis_USB;
 
@@ -186,6 +192,14 @@ void SetupInput()
         JMapAxis = JMapAxis_360;
         printf("Using Xbox 360 map\n");
       }
+      
+      if (strcmp(Name, "ShanWan Twin USB Joystick") == 0)
+      {
+        JMapBtn = JMapBtn_SHAI;
+        JMapAxis = JMapAxis_SHAI;
+        printf("Using ShanWan Twin USB map\n");
+      }
+      
     }
   #endif
 }
